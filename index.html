@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>document.documentElement.classList.add('js')</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NextGen Printing | 3D printing and 2D printing</title>
+<meta name="description" content="NextGen Printing: custom 3D printing and every kind of 2D printing, from business cards to banners. Get a quote online.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='15' height='15' fill='%2300AEEF'/><rect x='17' width='15' height='15' fill='%23EC008C'/><rect y='17' width='15' height='15' fill='%23FFD400'/><rect x='17' y='17' width='15' height='15' fill='%2315171F'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Unbounded:wght@500;700;900&display=swap" rel="stylesheet">
+
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --paper:#F5F6F8;
+  --ink:#15171F;
+  --c:#00AEEF;      /* cyan */
+  --m:#EC008C;      /* magenta */
+  --y:#FFD400;      /* yellow */
+  --mute:#5B6070;
+  --line:#D9DCE3;
+  --display:'Unbounded', 'Arial Black', sans-serif;
+  --body:'Figtree', system-ui, sans-serif;
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --pad:clamp(1.25rem,5vw,4rem);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:5rem}
+body{font-family:var(--body);background:var(--paper);color:var(--ink);line-height:1.6;font-size:1.0625rem;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+img,svg{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+button,input,select,textarea{font:inherit;color:inherit}
+ul,ol{list-style:none}
+:focus-visible{outline:3px solid var(--m);outline-offset:3px;border-radius:4px}
+.wrap{max-width:1200px;margin:0 auto}
+.sec{padding:clamp(4.5rem,9vw,8rem) var(--pad)}
+h2{font-family:var(--display);font-weight:700;font-size:clamp(1.9rem,4.4vw,3.4rem);line-height:1.08;letter-spacing:-.02em;max-width:18ch}
+.lead{color:var(--mute);max-width:52ch;margin-top:1.1rem}
+.dark .lead{color:#A9AEBD}
+
+/* ============ SCROLL PROGRESS ============ */
+.progress{position:fixed;left:0;top:0;height:4px;width:100%;transform-origin:left;transform:scaleX(0);z-index:60;
+  background:linear-gradient(90deg,var(--c) 0 33.3%,var(--m) 33.3% 66.6%,var(--y) 66.6%)}
+
+/* ============ LOADER (CMYK panels lift away) ============ */
+.loader{position:fixed;inset:0;z-index:100;display:grid;grid-template-columns:repeat(4,1fr);pointer-events:none}
+.loader i{background:var(--c);transform-origin:top;animation:lift .85s cubic-bezier(.77,0,.18,1) forwards;animation-delay:calc(.75s + var(--i)*.09s)}
+.loader i:nth-child(2){background:var(--m)}
+.loader i:nth-child(3){background:var(--y)}
+.loader i:nth-child(4){background:var(--ink)}
+.loader b{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--display);font-weight:900;color:#fff;
+  font-size:clamp(1.5rem,5vw,3rem);letter-spacing:-.02em;mix-blend-mode:difference;animation:fadeOut .4s .45s forwards}
+@keyframes lift{to{transform:scaleY(0)}}
+@keyframes fadeOut{to{opacity:0;transform:translateY(-12px)}}
+.loader.done{display:none}
+
+/* ============ NAV ============ */
+.nav{position:fixed;top:0;left:0;right:0;z-index:50;padding:.9rem var(--pad);display:flex;align-items:center;justify-content:space-between;
+  background:rgba(245,246,248,.78);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid transparent;transition:border-color .3s,padding .3s}
+.nav.scrolled{border-color:var(--line);padding-top:.65rem;padding-bottom:.65rem}
+.logo{display:flex;align-items:center;gap:.7rem;font-family:var(--display);font-weight:700;font-size:1rem;letter-spacing:-.02em}
+.logo .dots{display:grid;grid-template-columns:1fr 1fr;gap:3px;width:22px;height:22px;transition:transform .6s var(--ease)}
+.logo:hover .dots{transform:rotate(90deg)}
+.logo .dots i{border-radius:2px}
+.logo .dots i:nth-child(1){background:var(--c)}.logo .dots i:nth-child(2){background:var(--m)}
+.logo .dots i:nth-child(3){background:var(--y)}.logo .dots i:nth-child(4){background:var(--ink)}
+.links{display:flex;align-items:center;gap:2rem}
+.links a.l{position:relative;font-weight:500;font-size:.98rem;padding:.2rem 0}
+.links a.l::after{content:"";position:absolute;left:0;bottom:-2px;height:3px;width:100%;background:var(--m);transform:scaleX(0);transform-origin:right;transition:transform .35s var(--ease)}
+.links a.l:hover::after{transform:scaleX(1);transform-origin:left}
+.burger{display:none;width:44px;height:44px;border:0;background:none;cursor:pointer;position:relative}
+.burger span{position:absolute;left:10px;right:10px;height:2px;background:var(--ink);transition:transform .4s var(--ease),opacity .2s}
+.burger span:nth-child(1){top:16px}.burger span:nth-child(2){top:22px}.burger span:nth-child(3){top:28px}
+.burger[aria-expanded="true"] span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.burger[aria-expanded="true"] span:nth-child(2){opacity:0}
+.burger[aria-expanded="true"] span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+
+/* ============ BUTTONS (fill wipe) ============ */
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.9rem 1.6rem;border-radius:999px;font-weight:600;cursor:pointer;
+  border:2px solid var(--ink);background:var(--ink);color:var(--paper);overflow:hidden;isolation:isolate;transition:color .35s,transform .25s var(--ease)}
+.btn::before{content:"";position:absolute;inset:0;background:var(--m);transform:translateY(101%);transition:transform .45s var(--ease);z-index:-1}
+.btn:hover::before{transform:none}
+.btn:hover{color:#fff}
+.btn:active{transform:scale(.97)}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.ghost::before{background:var(--y)}
+.btn.ghost:hover{color:var(--ink)}
+.btn.sm{padding:.55rem 1.15rem;font-size:.95rem}
+
+/* ============ HERO ============ */
+.hero{padding:7.5rem var(--pad) 4rem;min-height:100svh;display:flex;flex-direction:column;justify-content:center}
+.hero h1{font-family:var(--display);font-weight:900;line-height:.98;letter-spacing:-.045em;font-size:clamp(2.9rem,10.6vw,9.2rem)}
+.reg{position:relative;display:inline-block;color:var(--ink);white-space:nowrap}
+.reg::before,.reg::after{content:attr(data-t);position:absolute;left:0;top:0;mix-blend-mode:multiply;pointer-events:none}
+.reg::before{color:var(--c)}
+.reg::after{color:var(--m)}
+/* the headline arrives out of register, then snaps into alignment */
+.js .reg{color:var(--y)}
+.js .reg::before{transform:translate(-.07em,-.045em)}
+.js .reg::after{transform:translate(.07em,.045em)}
+.js.ready .reg{color:var(--ink);transition:color .5s 1.25s}
+.js.ready .reg::before,.js.ready .reg::after{transform:none;transition:transform 1.5s var(--ease)}
+.js.ready .reg.l2,.js.ready .reg.l2::before,.js.ready .reg.l2::after{transition-delay:.18s}
+.js.ready .reg.l2{transition-delay:1.43s}
+.hero-grid{display:grid;gap:3rem;margin-top:clamp(2rem,5vw,3.5rem);align-items:center}
+@media(min-width:900px){.hero-grid{grid-template-columns:1.1fr .9fr}}
+.hero .lead{font-size:1.2rem;color:var(--ink);max-width:34ch;margin:0}
+.cta-row{display:flex;gap:.9rem;flex-wrap:wrap;margin-top:1.8rem}
+.stage{position:relative;justify-self:center;width:min(100%,380px)}
+.stage svg{width:100%;height:auto;overflow:visible}
+.layer-readout{margin-top:.2rem;text-align:center;font-weight:500;color:var(--mute);font-variant-numeric:tabular-nums;font-size:.95rem}
+.layer-readout b{color:var(--ink)}
+
+/* hero entrance (after loader) */
+.js .hero .lead,.js .hero .cta-row,.js .stage{opacity:0;transform:translateY(28px)}
+.js.ready .hero .lead,.js.ready .hero .cta-row,.js.ready .stage{opacity:1;transform:none;transition:opacity .9s var(--ease),transform .9s var(--ease)}
+.js.ready .hero .lead{transition-delay:1.5s}.js.ready .hero .cta-row{transition-delay:1.65s}.js.ready .stage{transition-delay:1.55s}
+
+/* ============ MARQUEE ============ */
+.marquee{border-block:1px solid var(--line);overflow:hidden;background:#fff;padding:1.1rem 0}
+.track{display:flex;width:max-content;animation:scroll 38s linear infinite}
+.marquee:hover .track{animation-play-state:paused}
+.track span{font-family:var(--display);font-weight:500;font-size:1.05rem;white-space:nowrap;display:flex;align-items:center}
+.track span::after{content:"";width:10px;height:10px;margin:0 1.6rem;background:var(--c);transform:rotate(45deg)}
+.track span:nth-child(3n+2)::after{background:var(--m)}
+.track span:nth-child(3n)::after{background:var(--y)}
+@keyframes scroll{to{transform:translateX(-50%)}}
+
+/* ============ SERVICES ============ */
+.tabs{position:relative;display:inline-flex;margin-top:2.2rem;padding:5px;background:#fff;border:1px solid var(--line);border-radius:999px}
+.tabs button{position:relative;z-index:1;border:0;background:none;cursor:pointer;padding:.7rem 1.6rem;border-radius:999px;font-weight:600;transition:color .3s}
+.tabs button[aria-selected="true"]{color:var(--paper)}
+.tabs .ind{position:absolute;z-index:0;top:5px;bottom:5px;left:5px;width:0;background:var(--ink);border-radius:999px;transition:left .5s var(--ease),width .5s var(--ease)}
+.panels{display:grid;margin-top:2.5rem}
+.panel{grid-area:1/1;display:grid;gap:2.5rem;opacity:0;visibility:hidden;transform:translateY(18px);transition:opacity .35s,transform .5s var(--ease),visibility 0s .35s}
+.panel.active{opacity:1;visibility:visible;transform:none;transition:opacity .5s .15s,transform .6s .15s var(--ease),visibility 0s}
+@media(min-width:900px){.panel{grid-template-columns:.8fr 1.6fr}}
+.panel h3{font-family:var(--display);font-size:1.5rem;line-height:1.2;letter-spacing:-.02em}
+.panel .side p{color:var(--mute);margin-top:.9rem;max-width:40ch}
+.chips{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.3rem}
+.chips li{padding:.35rem .9rem;border:1.5px solid var(--ink);border-radius:999px;font-weight:600;font-size:.9rem;transition:background .3s,transform .3s var(--ease)}
+.chips li:hover{background:var(--y);transform:translateY(-3px) rotate(-2deg)}
+.items{display:grid;gap:1rem;grid-template-columns:repeat(auto-fill,minmax(210px,1fr))}
+.item{position:relative;padding:1.4rem 1.3rem 1.5rem;background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;isolation:isolate;min-height:130px;
+  transition:transform .4s var(--ease),border-color .3s}
+.item::before{content:"";position:absolute;inset:0;background:var(--w,var(--c));transform:scaleY(0);transform-origin:bottom;transition:transform .5s var(--ease);z-index:-1}
+.item:nth-child(3n+2){--w:var(--m)}.item:nth-child(3n){--w:var(--y)}
+.item:hover{transform:translateY(-6px);border-color:var(--ink)}
+.item:hover::before{transform:scaleY(1)}
+.item h4{font-family:var(--display);font-weight:500;font-size:1rem;line-height:1.25}
+.item p{font-size:.93rem;margin-top:.45rem;color:var(--mute);transition:color .3s}
+.item:hover p{color:var(--ink)}
+.panel.active .item{animation:pop .6s var(--ease) both;animation-delay:calc(var(--i)*70ms + .2s)}
+@keyframes pop{from{opacity:0;transform:translateY(22px) scale(.96)}to{opacity:1;transform:none}}
+
+/* ============ STATS ============ */
+.stats{display:grid;gap:2.5rem;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));padding-block:3.5rem;border-block:1px solid var(--line)}
+.stat b{display:block;font-family:var(--display);font-weight:700;font-size:clamp(2.2rem,5vw,3.6rem);letter-spacing:-.03em;line-height:1}
+.stat span{display:block;margin-top:.6rem;color:var(--mute);max-width:26ch}
+
+/* ============ LAYER HEIGHT (dark) ============ */
+.dark{background:var(--ink);color:var(--paper)}
+.layers-grid{display:grid;gap:3rem;align-items:center;margin-top:3rem}
+@media(min-width:900px){.layers-grid{grid-template-columns:1fr 1fr}}
+.control label{display:flex;justify-content:space-between;align-items:baseline;font-weight:600}
+.control output{font-family:var(--display);font-size:1.8rem;letter-spacing:-.03em}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:10px;border-radius:99px;margin:1.4rem 0 .6rem;cursor:pointer;
+  background:linear-gradient(90deg,var(--c),var(--m),var(--y))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;border-radius:50%;background:var(--paper);border:5px solid var(--ink);box-shadow:0 0 0 3px var(--paper);transition:transform .25s var(--ease)}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--paper);border:5px solid var(--ink);box-shadow:0 0 0 3px var(--paper)}
+input[type=range]:active::-webkit-slider-thumb{transform:scale(1.2)}
+.ticks{display:flex;justify-content:space-between;font-size:.85rem;color:#A9AEBD}
+.verdict{margin-top:1.8rem;padding:1.2rem 1.3rem;border:1px solid #343848;border-radius:14px;min-height:5.2rem}
+.verdict strong{display:block;font-family:var(--display);font-weight:500;margin-bottom:.25rem;transition:color .3s}
+.verdict p{color:#A9AEBD;font-size:.97rem}
+.zoom{background:#1D2030;border-radius:20px;padding:1rem;position:relative}
+.zoom svg{width:100%;height:auto}
+.zoom small{position:absolute;left:1.1rem;bottom:.8rem;color:#8D93A6;font-size:.82rem}
+
+/* ============ PROCESS ============ */
+.steps{display:grid;gap:2rem;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));margin-top:3.2rem}
+.steps li{position:relative;padding-top:1.4rem}
+.steps li::before{content:"";position:absolute;top:0;left:0;right:0;height:4px;background:var(--c);transform:scaleX(0);transform-origin:left;transition:transform 1s var(--ease);transition-delay:calc(var(--i)*.25s)}
+.steps li:nth-child(2)::before{background:var(--m)}.steps li:nth-child(3)::before{background:var(--y)}.steps li:nth-child(4)::before{background:var(--ink)}
+.steps.in li::before{transform:scaleX(1)}
+.steps .n{font-family:var(--display);font-weight:900;font-size:2.4rem;letter-spacing:-.04em;line-height:1}
+.steps h3{font-family:var(--display);font-weight:500;font-size:1.1rem;margin:.8rem 0 .4rem;line-height:1.25}
+.steps p{color:var(--mute);font-size:.98rem}
+
+/* ============ QUOTE ============ */
+.quote-grid{display:grid;gap:3rem}
+@media(min-width:900px){.quote-grid{grid-template-columns:1fr 1.1fr;align-items:start}}
+.contact-lines{margin-top:2rem;display:grid;gap:.9rem}
+.contact-lines a{display:flex;align-items:center;gap:.8rem;font-weight:600;width:fit-content;position:relative}
+.contact-lines a i{width:12px;height:12px;border-radius:50%;background:var(--c);transition:transform .4s var(--ease)}
+.contact-lines a:nth-child(2) i{background:var(--m)}.contact-lines a:nth-child(3) i{background:var(--y)}
+.contact-lines a:hover i{transform:scale(1.8)}
+.card{position:relative;background:#fff;border:1px solid var(--line);border-radius:22px;padding:clamp(1.4rem,3vw,2.2rem);overflow:hidden}
+form{display:grid;gap:1.1rem;transition:opacity .4s,transform .5s var(--ease)}
+.field{display:grid;gap:.35rem}
+.field label{font-weight:600;font-size:.95rem}
+.field input,.field select,.field textarea{width:100%;padding:.8rem 1rem;border:1.5px solid var(--line);border-radius:12px;background:var(--paper);transition:border-color .25s,box-shadow .25s,background .25s}
+.field textarea{min-height:110px;resize:vertical}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--ink);background:#fff;box-shadow:4px 4px 0 var(--c)}
+.field.err input,.field.err select{border-color:var(--m);animation:shake .4s}
+.field .msg{color:var(--m);font-size:.88rem;min-height:0}
+.two{display:grid;gap:1.1rem}
+@media(min-width:560px){.two{grid-template-columns:1fr 1fr}}
+@keyframes shake{25%{transform:translateX(-6px)}60%{transform:translateX(6px)}}
+.done-box{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;text-align:center;gap:.8rem;padding:2rem;background:#fff;opacity:0;visibility:hidden;transform:scale(.96);transition:opacity .5s,transform .6s var(--ease),visibility 0s .5s}
+.card.sent .done-box{opacity:1;visibility:visible;transform:none;transition-delay:.1s,.1s,0s}
+.card.sent form{opacity:0;transform:translateY(-20px);pointer-events:none}
+.tick{width:84px;height:84px}
+.tick circle{fill:none;stroke:var(--c);stroke-width:5;stroke-dasharray:252;stroke-dashoffset:252}
+.tick path{fill:none;stroke:var(--ink);stroke-width:6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:60;stroke-dashoffset:60}
+.card.sent .tick circle{animation:draw .8s .2s var(--ease) forwards}
+.card.sent .tick path{animation:draw .5s .8s var(--ease) forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.done-box h3{font-family:var(--display);font-size:1.4rem}
+.done-box p{color:var(--mute);max-width:32ch}
+
+/* ============ FOOTER ============ */
+footer{padding:2.2rem var(--pad);border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:1rem;justify-content:space-between;align-items:center;color:var(--mute);font-size:.95rem}
+footer a{font-weight:600;color:var(--ink)}
+
+/* ============ SCROLL REVEAL ============ */
+.js .rv{opacity:0;transform:translateY(34px);transition:opacity .9s var(--ease),transform .9s var(--ease);transition-delay:var(--d,0s)}
+.js .rv.in{opacity:1;transform:none}
+
+/* ============ RESPONSIVE NAV ============ */
+@media(max-width:820px){
+  .burger{display:block}
+  .links{position:absolute;top:100%;left:0;right:0;flex-direction:column;align-items:flex-start;gap:0;background:var(--paper);padding:0 var(--pad);
+    max-height:0;overflow:hidden;border-bottom:1px solid transparent;transition:max-height .5s var(--ease),padding .5s var(--ease)}
+  .links.open{max-height:420px;padding:1rem var(--pad) 1.6rem;border-color:var(--line)}
+  .links a.l{padding:.8rem 0;font-size:1.2rem}
+  .links .btn{margin-top:.6rem}
+}
+
+/* ============ REDUCED MOTION ============ */
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+  .loader{display:none}
+  .js .rv,.js .hero .lead,.js .hero .cta-row,.js .stage{opacity:1;transform:none}
+  .js .reg{color:var(--ink)}.js .reg::before,.js .reg::after{transform:none}
+  .steps li::before{transform:scaleX(1)}
+}
+</style>
+</head>
+
+<body>
+<div class="progress" id="progress"></div>
+
+<div class="loader" id="loader" aria-hidden="true"><i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i><i style="--i:3"></i><b>NextGen</b></div>
+
+<!-- ============ NAV ============ -->
+<header class="nav" id="nav">
+  <a class="logo" href="#top" aria-label="NextGen Printing home"><span class="dots"><i></i><i></i><i></i><i></i></span>NextGen Printing</a>
+  <button class="burger" id="burger" aria-label="Menu" aria-expanded="false" aria-controls="links"><span></span><span></span><span></span></button>
+  <nav class="links" id="links">
+    <a class="l" href="#services">What we print</a>
+    <a class="l" href="#layers">3D quality</a>
+    <a class="l" href="#process">How it works</a>
+    <a class="btn sm" href="#quote">Get a quote</a>
+  </nav>
+</header>
+
+<main id="top">
+<!-- ============ HERO ============ -->
+<section class="hero">
+  <h1 aria-label="NextGen Printing">
+    <span class="reg l1" data-t="NextGen" aria-hidden="true">NextGen</span><br>
+    <span class="reg l2" data-t="Printing" aria-hidden="true">Printing</span>
+  </h1>
+  <div class="hero-grid">
+    <div>
+      <p class="lead">3D printing and every kind of 2D printing, in one shop. Send a file or just an idea.</p>
+      <div class="cta-row">
+        <a class="btn" href="#quote">Get a quote</a>
+        <a class="btn ghost" href="#services">See what we print</a>
+      </div>
+    </div>
+    <div class="stage">
+      <svg id="stack" viewBox="0 0 360 430" role="img" aria-label="A vase being 3D printed layer by layer"></svg>
+      <p class="layer-readout">Layer <b id="layerNum">0</b> of <span id="layerTotal">90</span></p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ MARQUEE ============ -->
+<div class="marquee" aria-hidden="true"><div class="track" id="track"></div></div>
+
+<!-- ============ SERVICES ============ -->
+<section class="sec" id="services">
+  <div class="wrap">
+    <h2 class="rv">Two ways to print, one shop</h2>
+    <p class="lead rv" style="--d:.1s">Pick a side to see what we make. Not on the list? Ask. If it can be printed, we will try.</p>
+
+    <div class="tabs rv" style="--d:.2s" role="tablist" aria-label="Printing type" id="tabs">
+      <span class="ind" id="ind"></span>
+      <button role="tab" id="t3d" aria-selected="true" aria-controls="p3d">3D printing</button>
+      <button role="tab" id="t2d" aria-selected="false" aria-controls="p2d" tabindex="-1">2D printing</button>
+    </div>
+
+    <div class="panels">
+      <!-- 3D -->
+      <div class="panel active" id="p3d" role="tabpanel" aria-labelledby="t3d">
+        <div class="side">
+          <h3>From a file to a real object</h3>
+          <p>Send an STL or OBJ file. No file? Send a sketch or a photo and we can model it for you.</p>
+          <ul class="chips" aria-label="Materials"><li>PLA</li><li>PETG</li><li>ABS</li><li>Resin</li></ul>
+        </div>
+        <ul class="items">
+          <li class="item" style="--i:0"><h4>Prototypes</h4><p>Test your design before you commit to manufacturing.</p></li>
+          <li class="item" style="--i:1"><h4>Custom models and figurines</h4><p>Characters, trophies and display pieces.</p></li>
+          <li class="item" style="--i:2"><h4>Spare and functional parts</h4><p>Brackets, clips, gears and hard-to-find parts.</p></li>
+          <li class="item" style="--i:3"><h4>Enclosures and cases</h4><p>Housings for electronics and projects.</p></li>
+          <li class="item" style="--i:4"><h4>Gifts and name plates</h4><p>Personalized pieces made one at a time.</p></li>
+          <li class="item" style="--i:5"><h4>Architectural models</h4><p>Scale models of buildings and layouts.</p></li>
+        </ul>
+      </div>
+      <!-- 2D -->
+      <div class="panel" id="p2d" role="tabpanel" aria-labelledby="t2d">
+        <div class="side">
+          <h3>Ink on anything that lies flat</h3>
+          <p>Send your artwork as PDF, AI, PSD or PNG. No design yet? Tell us what you need and we will help.</p>
+          <ul class="chips" aria-label="Finishes"><li>Matte</li><li>Gloss</li><li>Laminated</li><li>Vinyl</li></ul>
+        </div>
+        <ul class="items">
+          <li class="item" style="--i:0"><h4>Business cards</h4><p>Sharp, consistent colour in any quantity.</p></li>
+          <li class="item" style="--i:1"><h4>Flyers and brochures</h4><p>Folded, stapled or single sheet.</p></li>
+          <li class="item" style="--i:2"><h4>Posters and banners</h4><p>Large format prints for shops and events.</p></li>
+          <li class="item" style="--i:3"><h4>Stickers and labels</h4><p>Die-cut shapes, sheets and rolls.</p></li>
+          <li class="item" style="--i:4"><h4>Stationery</h4><p>Letterheads, envelopes and invoice books.</p></li>
+          <li class="item" style="--i:5"><h4>Menus and booklets</h4><p>Multi-page prints bound neatly.</p></li>
+          <li class="item" style="--i:6"><h4>Packaging and boxes</h4><p>Printed sleeves, tags and product boxes.</p></li>
+          <li class="item" style="--i:7"><h4>Mugs, T-shirts and merch</h4><p>Your design on everyday things.</p></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ STATS (edit these to match your real numbers) ============ -->
+<div style="padding:0 var(--pad)">
+  <div class="wrap stats" id="stats">
+    <div class="stat rv"><b><span data-count="0.05" data-dec="2">0</span> mm</b><span>Finest 3D layer height we can print</span></div>
+    <div class="stat rv" style="--d:.12s"><b><span data-count="4">0</span></b><span>3D print materials to choose from</span></div>
+    <div class="stat rv" style="--d:.24s"><b><span data-count="14">0</span>+</b><span>Kinds of 2D prints, one place to order</span></div>
+  </div>
+</div>
+
+<!-- ============ LAYER HEIGHT ============ -->
+<section class="sec dark" id="layers" style="margin-top:clamp(4.5rem,9vw,8rem)">
+  <div class="wrap">
+    <h2 class="rv">See what layer height does to your part</h2>
+    <p class="lead rv" style="--d:.1s">Every 3D print is built from thin layers. Thinner layers give a smoother surface but take longer. Drag the slider to see the difference.</p>
+
+    <div class="layers-grid">
+      <div class="control rv">
+        <label for="lh">Layer height <output id="lhOut" for="lh">0.20 mm</output></label>
+        <input type="range" id="lh" min="0.05" max="0.30" step="0.05" value="0.20">
+        <div class="ticks"><span>0.05 mm fine</span><span>0.30 mm draft</span></div>
+        <div class="verdict"><strong id="vTitle">Balanced</strong><p id="vText"></p></div>
+      </div>
+      <div class="zoom rv" style="--d:.15s">
+        <svg id="wall" viewBox="0 0 360 340" role="img" aria-label="Zoomed view of 3D printed layers"></svg>
+        <small>Zoomed view of a 10 mm section of a sloped wall</small>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ PROCESS ============ -->
+<section class="sec" id="process">
+  <div class="wrap">
+    <h2 class="rv">Four steps from idea to pickup</h2>
+    <ol class="steps" id="steps">
+      <li style="--i:0"><div class="n">1</div><h3>Send your file or idea</h3><p>Share it on WhatsApp, by email or with the form below.</p></li>
+      <li style="--i:1"><div class="n">2</div><h3>Get a clear quote</h3><p>We confirm the material, size, quantity, price and timing.</p></li>
+      <li style="--i:2"><div class="n">3</div><h3>We print it</h3><p>You see a proof or a photo before we finish the job.</p></li>
+      <li style="--i:3"><div class="n">4</div><h3>Pick up or delivery</h3><p>Collect it from us or have it sent to your door.</p></li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============ QUOTE ============ -->
+<section class="sec" id="quote" style="padding-top:0">
+  <div class="wrap quote-grid">
+    <div>
+      <h2 class="rv">Tell us what to print</h2>
+      <p class="lead rv" style="--d:.1s">Fill in the form and it opens a ready-made WhatsApp message. Attach your file there.</p>
+      <div class="contact-lines rv" style="--d:.2s">
+        <a href="https://wa.me/920000000000" id="waLink" target="_blank" rel="noopener"><i></i>WhatsApp: +92 000 0000000</a>
+        <a href="mailto:hello@nextgenprinting.com"><i></i>hello@nextgenprinting.com</a>
+        <a href="#top"><i></i>Your shop address here</a>
+      </div>
+    </div>
+
+    <div class="card rv" style="--d:.15s" id="card">
+      <form id="form" novalidate>
+        <div class="two">
+          <div class="field"><label for="name">Your name</label><input id="name" name="name" autocomplete="name" required><span class="msg" aria-live="polite"></span></div>
+          <div class="field"><label for="phone">Phone or WhatsApp</label><input id="phone" name="phone" inputmode="tel" autocomplete="tel" required><span class="msg" aria-live="polite"></span></div>
+        </div>
+        <div class="field">
+          <label for="service">What do you need?</label>
+          <select id="service" name="service" required>
+            <option value="">Choose one</option>
+            <option>3D print from my file</option>
+            <option>3D print, I need a model made</option>
+            <option>Business cards</option>
+            <option>Flyers or brochures</option>
+            <option>Posters or banners</option>
+            <option>Stickers or labels</option>
+            <option>Mugs, T-shirts or merch</option>
+            <option>Something else</option>
+          </select><span class="msg" aria-live="polite"></span>
+        </div>
+        <div class="field"><label for="details">Size, quantity and details</label><textarea id="details" name="details" placeholder="Example: 100 business cards, matte finish, 90 x 55 mm"></textarea></div>
+        <button class="btn" type="submit">Send quote request</button>
+      </form>
+
+      <div class="done-box" role="status">
+        <svg class="tick" viewBox="0 0 84 84" aria-hidden="true"><circle cx="42" cy="42" r="40"/><path d="M25 43l12 12 23-26"/></svg>
+        <h3>Request ready</h3>
+        <p>WhatsApp should open with your details. Attach your file there and send.</p>
+        <button class="btn ghost sm" id="again" type="button">Send another</button>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <span>&copy; <span id="yr"></span> NextGen Printing. All rights reserved.</span>
+  <a href="#top">Back to top</a>
+</footer>
+
+<script>
+/* ======== EDIT THESE ======== */
+const WHATSAPP_NUMBER = "920000000000"; // country code + number, no + or spaces (Pakistan example: 923001234567)
+/* ============================ */
+
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+
+/* ---------- Loader then ready ---------- */
+const root = document.documentElement;
+setTimeout(() => root.classList.add('ready'), reduce ? 0 : 850);
+setTimeout(() => $('#loader').classList.add('done'), reduce ? 0 : 2000);
+
+/* ---------- Nav, progress bar ---------- */
+const nav = $('#nav'), bar = $('#progress');
+function onScroll(){
+  nav.classList.toggle('scrolled', scrollY > 20);
+  const h = document.documentElement.scrollHeight - innerHeight;
+  bar.style.transform = `scaleX(${h > 0 ? scrollY / h : 0})`;
+}
+addEventListener('scroll', onScroll, {passive:true}); onScroll();
+
+const burger = $('#burger'), links = $('#links');
+burger.addEventListener('click', () => {
+  const open = links.classList.toggle('open');
+  burger.setAttribute('aria-expanded', open);
+});
+$$('#links a').forEach(a => a.addEventListener('click', () => { links.classList.remove('open'); burger.setAttribute('aria-expanded', false); }));
+
+/* ---------- Marquee ---------- */
+const words = ['3D prototypes','Business cards','Custom figurines','Banners','Stickers','Spare parts','Flyers','Posters','Enclosures','Brochures','Labels','Packaging','Merch'];
+$('#track').innerHTML = [...words, ...words].map(w => `<span>${w}</span>`).join('');
+
+/* ---------- Scroll reveal ---------- */
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+}, {threshold:.15, rootMargin:'0px 0px -6% 0px'});
+$$('.rv, #steps').forEach(el => io.observe(el));
+
+/* ---------- Count-up numbers ---------- */
+const cio = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    cio.unobserve(e.target);
+    const el = e.target, end = parseFloat(el.dataset.count), dec = +el.dataset.dec || 0;
+    if (reduce){ el.textContent = end.toFixed(dec); return; }
+    const t0 = performance.now(), dur = 1600;
+    (function tick(t){
+      const p = Math.min((t - t0) / dur, 1), eased = 1 - Math.pow(1 - p, 4);
+      el.textContent = (end * eased).toFixed(dec);
+      if (p < 1) requestAnimationFrame(tick);
+    })(t0);
+  });
+}, {threshold:.6});
+$$('[data-count]').forEach(el => cio.observe(el));
+
+/* ---------- Hero: a vase prints itself, layer by layer ---------- */
+(function(){
+  const svg = $('#stack'), NS = 'http://www.w3.org/2000/svg';
+  const N = 90, cx = 180, baseY = 372, step = 3.1;
+  const numEl = $('#layerNum'); $('#layerTotal').textContent = N;
+
+  // print bed
+  svg.insertAdjacentHTML('beforeend',
+    `<rect x="40" y="378" width="280" height="14" rx="7" fill="#15171F"/>
+     <rect x="60" y="392" width="240" height="6" rx="3" fill="#15171F" opacity=".18"/>`);
+
+  const layers = [];
+  for (let i = 0; i < N; i++){
+    const t = i / (N - 1);
+    const rx = 42 + 38 * Math.pow(Math.sin(Math.PI * t), .8) + 16 * Math.pow(t, 6);
+    const e = document.createElementNS(NS, 'ellipse');
+    e.setAttribute('cx', cx); e.setAttribute('cy', baseY - i * step);
+    e.setAttribute('rx', rx); e.setAttribute('ry', rx * .26);
+    e.setAttribute('fill', `hsl(${(195 + t * 215) % 360} 92% 54%)`);
+    e.setAttribute('stroke', 'rgba(21,23,31,.22)'); e.setAttribute('stroke-width', '1');
+    e.style.opacity = 0;
+    svg.appendChild(e); layers.push({e, rx});
+  }
+
+  // nozzle
+  const noz = document.createElementNS(NS, 'g');
+  noz.innerHTML = `<rect x="-26" y="-58" width="52" height="30" rx="8" fill="#15171F"/>
+                   <polygon points="-11,-28 11,-28 3,-8 -3,-8" fill="#15171F"/>
+                   <circle cx="0" cy="-5" r="3" fill="#FFD400"/>`;
+  svg.appendChild(noz);
+
+  function show(n){
+    layers.forEach((l, i) => l.e.style.opacity = i < n ? 1 : 0);
+    numEl.textContent = Math.min(Math.ceil(n), N);
+  }
+  if (reduce){ show(N); noz.style.display = 'none'; return; }
+
+  let start = performance.now(), visible = true;
+  new IntersectionObserver(([en]) => visible = en.isIntersecting).observe(svg);
+  const BUILD = 7000, HOLD = 1800, FADE = 600;
+
+  (function frame(now){
+    requestAnimationFrame(frame);
+    if (!visible) return;
+    const t = (now - start) % (BUILD + HOLD + FADE);
+    if (t < BUILD){
+      const p = t / BUILD, n = p * N, top = Math.min(Math.floor(n), N - 1);
+      show(n);
+      const l = layers[top];
+      const swing = Math.sin(now / 140) * l.rx * .75;
+      noz.setAttribute('transform', `translate(${cx + swing} ${baseY - top * step})`);
+      noz.style.opacity = 1;
+      svg.style.opacity = 1;
+    } else if (t < BUILD + HOLD){
+      show(N);
+      const l = layers[N - 1];
+      noz.setAttribute('transform', `translate(${cx + 150} ${baseY - (N - 1) * step - 40})`);
+      noz.style.transition = 'transform .8s'; noz.style.opacity = .0;
+    } else {
+      svg.style.opacity = 1 - (t - BUILD - HOLD) / FADE;
+    }
+  })(start);
+})();
+
+/* ---------- Service tabs ---------- */
+(function(){
+  const tabs = $$('[role=tab]'), ind = $('#ind');
+  function place(btn){ ind.style.left = btn.offsetLeft + 'px'; ind.style.width = btn.offsetWidth + 'px'; }
+  function select(btn){
+    tabs.forEach(b => { const on = b === btn; b.setAttribute('aria-selected', on); b.tabIndex = on ? 0 : -1;
+      $('#' + b.getAttribute('aria-controls')).classList.toggle('active', on); });
+    place(btn);
+  }
+  tabs.forEach(b => {
+    b.addEventListener('click', () => select(b));
+    b.addEventListener('keydown', e => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft'){
+        const next = tabs[(tabs.indexOf(b) + 1) % tabs.length]; next.focus(); select(next);
+      }
+    });
+  });
+  const init = () => place($('[role=tab][aria-selected=true]'));
+  init(); addEventListener('resize', init);
+  document.fonts && document.fonts.ready.then(init);
+})();
+
+/* ---------- Layer height demo ---------- */
+(function(){
+  const slider = $('#lh'), out = $('#lhOut'), wall = $('#wall');
+  const title = $('#vTitle'), text = $('#vText');
+  const info = [
+    [0.08, 'Fine detail', 'Smooth surface, tiny features stay crisp. Takes the longest. Best for figurines and display pieces.', 'var(--c)'],
+    [0.16, 'Balanced', 'Good looks and sensible print time. A great default for most parts.', 'var(--m)'],
+    [1.00, 'Draft', 'Fastest and cheapest. Layer lines are visible. Ideal for prototypes and fit tests.', 'var(--y)']
+  ];
+  function draw(){
+    const lh = parseFloat(slider.value);
+    out.textContent = lh.toFixed(2) + ' mm';
+    const n = Math.round(10 / lh), h = 300 / n;
+    let svg = '';
+    for (let i = 0; i < n; i++){
+      const t = i / n, half = 132 - 62 * t;      // sloped wall: stair-steps appear on the edges
+      const y = 320 - (i + 1) * h;
+      svg += `<rect x="${(180 - half).toFixed(2)}" y="${y.toFixed(2)}" width="${(half * 2).toFixed(2)}" height="${(h + .4).toFixed(2)}" rx="${Math.min(h * .45, 7).toFixed(2)}" fill="hsl(${(195 + t * 215) % 360} 90% 56%)"/>`;
+    }
+    wall.innerHTML = svg;
+    const k = info.find(x => lh <= x[0]);
+    title.textContent = k[1]; title.style.color = k[3]; text.textContent = k[2];
+  }
+  slider.addEventListener('input', draw); draw();
+})();
+
+/* ---------- Quote form → WhatsApp ---------- */
+(function(){
+  const form = $('#form'), card = $('#card');
+  $('#waLink').href = 'https://wa.me/' + WHATSAPP_NUMBER;
+  const need = ['name','phone','service'];
+  need.forEach(id => $('#' + id).addEventListener('input', e => e.target.closest('.field').classList.remove('err')));
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    let ok = true;
+    need.forEach(id => {
+      const el = $('#' + id), f = el.closest('.field'), bad = !el.value.trim();
+      f.classList.toggle('err', bad);
+      $('.msg', f).textContent = bad ? (id === 'service' ? 'Choose what you need.' : 'This field is required.') : '';
+      if (bad) ok = false;
+    });
+    if (!ok) return;
+    const d = Object.fromEntries(new FormData(form));
+    const msg = `Hello NextGen Printing, I would like a quote.\nName: ${d.name}\nPhone: ${d.phone}\nNeed: ${d.service}\nDetails: ${d.details || '-'}`;
+    card.classList.add('sent');
+    setTimeout(() => window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(msg)}`, '_blank', 'noopener'), 900);
+  });
+  $('#again').addEventListener('click', () => { card.classList.remove('sent'); form.reset(); });
+})();
+
+$('#yr').textContent = new Date().getFullYear();
+</script>
+</body>
+</html>
